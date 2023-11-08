@@ -3,8 +3,6 @@ TERMV_RM_EMOJI=true
 add_src "iptv_org" "https://iptv-org.github.io/iptv/index.m3u" "m3u8"
 #add_src "ytb_m3u" "https://raw.githubusercontent.com/naveenland4/YouTube_to_m3u/main/youtube.m3u" "m3u8"
 add_src "freeiptv" "https://raw.githubusercontent.com/ipstreet312/freeiptv/master/all.m3u" "m3u8"
-add_src "lenadlm_iptv" "https://raw.githubusercontent.com/lenadlm/iptv.m3u/main/playlist.m3u" "m3u8"
-
 
 # load parsers
 . "${TERMV_CONFIG_DIR}/parsers"
