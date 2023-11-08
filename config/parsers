@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+
+# m3u8 related
+parse_playlist_m3u8(){
+	local filepath="${TERMV_CACHE_DIR:?}/playlists/${1:?}"
+
+	IFS= read -r first_line < "${filepath:?}"
+	case "${first_line}" in
+		"#EXTM3U"*) printf '%s' "(valide)";;
+		*) { prnt_err "${filepath:?} don't have a valide m3u8 header" ; return 1 ;};;
+	esac
+
+	while read -r line; do
+		case "$line" in
+			"#EXTINF"*)
+				declare -A metadata=( )
+				metadata[tv-name]="${line##*,}"
+				metadata[tv-name]="${metadata[tv-name]%%[[:cntrl:]]}"
+				metadata[tv-name]="$(echo ${metadata[tv-name]} | tr -d '\r')"
+
+				local other_metadata="${line%%,*}"
+				local other_metadata="${other_metadata#* }"
+				
+				while IFS="=" read -r key val; do
+					[ "${key##\#*}" ] || continue
+					metadata[${key}]="${val//\"}"
+				done < <(printf '%s\n' ${other_metadata:-} )
+				;;
+			"#EXTVLCOPT"*|"#KODIPROP"*|"# ")
+				;;
+			*)
+				[ -z "${metadata[tv-name]}" ] && continue
+				[ -z "${line}" ] && continue
+				
+				#[ -z "${metadata[tv-glanguage]}" ] && metadata[tv-glanguage]="${metadata[tvg-language]}"
+				#[ -z "${metadata[tv-gcountry]}" ] && metadata[tv-gcountry]="${metadata[tvg-country]}"
+
+				printf '%s \t %s \t %s \t %s \t %s\n' "${metadata[tv-name]:?}" "${metadata[group-title]:-N/A}" "${metadata[tv-glanguage]:-N/A}" "${metadata[tv-gcountry]:-N/A}" "${line:?}"
+				declare -A metadata=( )
+				;;
+		esac
+	done < "$filepath" > "${TERMV_CACHE_DIR:?}/termvs/${1:?}.termv"
+}
